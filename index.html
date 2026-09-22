@@ -9,7 +9,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+    .hero-image img {
+    width: 350px;           /* عرض الصورة */
+    height: 350px;          /* ارتفاع متساوي لجعلها مربعة الأبعاد قبل التدوير */
+    border-radius: 50%;     /* يجعل الصورة دائرية بالكامل */
+    object-fit: cover;      /* يحافظ على تناسق أبساد المحتوى داخل الدائرة بدون مط */
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* ظل خفيف وجمالي */
+}
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         :root {
             --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #8b5cf6;
             --success: #10b981; --danger: #ef4444; --dark: #1f2937;
@@ -30,7 +39,7 @@
         .nav-cart { background: var(--primary); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; display: flex; align-items: center; gap: 8px; border: none; cursor: pointer; font-size: 1rem; font-family: inherit; }
         .nav-cart:hover { background: var(--primary-dark); }
 
-        .hero { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 80px 20px; position: relative; overflow: hidden; }
+        .hero { background: linear-gradient(135deg, #e2e2ec 0%, #8b5cf6 100%); color: white; padding: 80px 20px; position: relative; overflow: hidden; }
         .hero-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; position: relative; z-index: 1; }
         .hero-text h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; line-height: 1.2; }
         .hero-text p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.95; }
@@ -182,7 +191,9 @@
                     </button>
                 </div>
             </div>
-            <div class="hero-image">🛍️</div>
+           <div class="hero-image">
+    <img src="logo.png.jpg" alt="">
+</div>
         </div>
     </section>
 
@@ -379,7 +390,7 @@
     const SUPABASE_URL = 'https://aekzjvpejnvqxdoxgnql.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_V18uirhcfLmsuzttjKzJbQ_7FNdeVC-';
     const WHATSAPP_NUMBER = '+212702080826';
-    const ADMIN_CODE = 'admin2024';
+    const ADMIN_CODE = 'abkari22098';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -930,24 +941,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================================
     // ===== إحصائيات الزوار =====
     // ============================================================
-    async function loadVisitorStats() {
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const { data: todayData } = await supabaseClient
-                .from('visitors').select('*').eq('visit_date', today);
-            const { count: totalCount } = await supabaseClient
-                .from('visitors').select('*', { count: 'exact', head: true });
-            return {
-                today: todayData ? todayData.length : 0,
-                total: totalCount || 0,
-                todayDetails: todayData || []
-            };
-        } catch (err) {
-            console.error('❌ خطأ:', err);
-            return { today: 0, total: 0, todayDetails: [] };
-        }
-    }
+  async function loadVisitorStats() {
+    try {
+        // جلب جميع الزيارات (بدون limit)
+        const { data, error } = await supabaseClient
+            .from('visitors')
+            .select('*')
+            .order('id', { ascending: false });
 
+        if (error) throw error;
+
+        // زوار اليوم
+        const today = new Date().toISOString().split('T')[0];
+        const todayVisits = data ? data.filter(v => v.visit_date === today) : [];
+
+        return {
+            today: todayVisits.length,
+            total: data ? data.length : 0,
+            todayDetails: data || []  // ← جميع الزيارات
+        };
+    } catch (err) {
+        console.error('❌ خطأ:', err);
+        return { today: 0, total: 0, todayDetails: [] };
+    }
+}
     async function loadVisitorStatsToPanel() {
         const el = document.getElementById('visitorStats');
         if (!el) return;
